@@ -1,0 +1,54 @@
+@startuml Data Flow Diagram
+
+title Data Flow Diagram
+
+actor "Пользователи" as Users
+actor "Клиники" as Clinics
+actor "Банки" as Banks
+actor "Фармацевтические\nкомпании" as Pharma
+
+database "Legacy DWH\n(SQL Server 2008)" as LegacyDWH
+database "Data Lakehouse\n(Apache Iceberg + S3)" as DataLakehouse
+database "Операционная БД\n(PostgreSQL)" as OperationalDB
+
+component "Миграция данных\n(ETL/ELT)" as DataMigration
+component "Медицинский домен\n(Java/Spring Boot)" as MedicalDomain
+component "Финтех домен\n(Golang)" as FintechDomain
+component "Аналитический домен\n(Python/FastApi)" as AnalyticsDomain
+component "ИИ домен\n(Python/FastApi)" as AIDomain
+component "Портал самообслуживания\n(React + TypeScript)" as SelfServicePortal
+component "API Gateway\n(Kong)" as APIGateway
+
+Users --> SelfServicePortal : "Запросы отчетов"
+SelfServicePortal --> Users : "Отчеты и дашборды"
+
+Clinics --> MedicalDomain : "Медицинские данные"
+Banks --> FintechDomain : "Финансовые данные"
+Pharma --> MedicalDomain : "Фармацевтические данные"
+
+LegacyDWH --> DataMigration : "Исторические данные"
+DataMigration --> OperationalDB : "Очищенные данные"
+
+MedicalDomain --> OperationalDB : "Операционные данные"
+FintechDomain --> OperationalDB : "Операционные данные"
+
+MedicalDomain --> DataLakehouse : "Агрегированные данные"
+FintechDomain --> DataLakehouse : "Финансовые метрики"
+AnalyticsDomain --> DataLakehouse : "Аналитические данные"
+AIDomain --> DataLakehouse : "ML результаты"
+
+DataLakehouse --> AnalyticsDomain : "Данные для анализа"
+DataLakehouse --> AIDomain : "Данные для ML"
+DataLakehouse --> SelfServicePortal : "Аналитические данные"
+
+MedicalDomain --> APIGateway : "API запросы"
+FintechDomain --> APIGateway : "API запросы"
+AnalyticsDomain --> APIGateway : "API запросы"
+AIDomain --> APIGateway : "API запросы"
+
+APIGateway --> SelfServicePortal : "Унифицированные API"
+
+MedicalDomain ..> AIDomain : "Анонимизированные\nмед. данные"
+FintechDomain ..> AIDomain : "Фин. транзакции\nдля анализа рисков"
+
+@enduml

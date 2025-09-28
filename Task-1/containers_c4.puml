@@ -1,0 +1,53 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title C4 Container Diagram
+
+Person(users, "Пользователи", "Аналитики, врачи, менеджеры")
+
+System_Boundary(ui_boundary, "Пользовательские интерфейсы") {
+    Container(web_app, "Веб-приложение", "React", "Основной интерфейс")
+    Container(mobile_app, "Мобильное приложение", "React Native", "Мобильный интерфейс")
+}
+
+Container(api_gateway, "API Gateway", "Kong", "Единая точка входа")
+
+System_Boundary(domains, "Бизнес-домены") {
+    Container(medical_service, "Медицинский сервис", "Java/Spring Boot", "Управление медицинскими данными")
+    Container(fintech_service, "Финтех сервис", "Golang", "Финансовые операции")
+    Container(analytics_service, "Аналитический сервис", "Python/FastApi", "Аналитика и отчеты")
+    Container(ai_service, "ИИ сервис", "Python/FastApi", "Машинное обучение")
+}
+
+System_Boundary(data_platform, "Платформа данных") {
+    Container(data_lakehouse, "Data Lakehouse", "Apache Iceberg + S3", "Центральное хранилище данных")
+    ContainerDb(operational_db, "Операционная БД", "PostgreSQL", "Операционные данные")
+    ContainerDb(analytics_db, "Аналитическая БД", "ClickHouse", "Аналитические данные")
+}
+
+System_Ext(external_systems, "Внешние системы", "Банки, фармацевтические компании")
+
+Rel(users, web_app, "Использует", "HTTPS")
+Rel(users, mobile_app, "Использует", "HTTPS")
+
+Rel(web_app, api_gateway, "Вызывает API", "HTTPS")
+Rel(mobile_app, api_gateway, "Вызывает API", "HTTPS")
+
+Rel(api_gateway, medical_service, "Маршрутизирует", "HTTPS")
+Rel(api_gateway, fintech_service, "Маршрутизирует", "HTTPS")
+Rel(api_gateway, analytics_service, "Маршрутизирует", "HTTPS")
+Rel(api_gateway, ai_service, "Маршрутизирует", "HTTPS")
+
+Rel(medical_service, data_lakehouse, "Записывает данные", "HTTPS")
+Rel(fintech_service, data_lakehouse, "Записывает данные", "HTTPS")
+Rel(analytics_service, data_lakehouse, "Читает данные", "HTTPS")
+Rel(ai_service, data_lakehouse, "Читает данные", "HTTPS")
+
+Rel(medical_service, operational_db, "Читает/записывает", "JDBC")
+Rel(fintech_service, operational_db, "Читает/записывает", "JDBC")
+Rel(analytics_service, analytics_db, "Читает/записывает", "ClickHouse")
+
+Rel(external_systems, fintech_service, "Предоставляет данные", "HTTPS")
+Rel(external_systems, medical_service, "Предоставляет данные", "HTTPS")
+
+@enduml
